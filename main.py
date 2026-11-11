@@ -709,23 +709,31 @@ if __name__ == "__main__":
     # uncomment and edit to pin specific models.
     template_bot = FallTemplateBot2026(
         research_reports_per_question=1,
-        predictions_per_research_report=5,
+        predictions_per_research_report=3,  # C1: 3 not 5 -> 10 calls/question, fits the free daily cap
         use_research_summary_to_forecast=False,
         publish_reports_to_metaculus=publish_to_metaculus,
         folder_to_save_reports_to=None,
         skip_previously_forecasted_questions=True,
         extra_metadata_in_explanation=True,
-        # llms={
-        #     "default": GeneralLlm(
-        #         model="openrouter/openai/gpt-4o",
-        #         temperature=0.3,
-        #         timeout=40,
-        #         allowed_tries=2,
-        #     ),
-        #     "summarizer": "openai/gpt-4o-mini",
-        #     "researcher": "asknews/news-summaries",
-        #     "parser": "openai/gpt-4o-mini",
-        # },
+        # C1 2026-11-11: $0 path. OpenRouter ":free" models on a personal OPENROUTER_API_KEY
+        # (Metaculus LLM proxy is gone; Gemini free tier unavailable for the project).
+        # Free cap: 20 req/min, 50 req/day until $10 of credits is ever bought, then 1000/day.
+        llms={
+            "default": GeneralLlm(
+                model="openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+                temperature=0.3,
+                timeout=300,
+                allowed_tries=3,
+            ),
+            "summarizer": "openrouter/google/gemma-4-31b-it:free",
+            "researcher": GeneralLlm(
+                model="openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+                temperature=0.3,
+                timeout=300,
+                allowed_tries=3,
+            ),
+            "parser": "openrouter/google/gemma-4-31b-it:free",
+        },
     )
 
     # Per-mode tournament URL shown in the summary banner footer. These
