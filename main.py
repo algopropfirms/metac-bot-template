@@ -718,6 +718,8 @@ if __name__ == "__main__":
         # C1 2026-11-11: $0 path. OpenRouter ":free" models on a personal OPENROUTER_API_KEY
         # (Metaculus LLM proxy is gone; Gemini free tier unavailable for the project).
         # Parser/summarizer moved off gemma-4-31b:free (upstream 429 in Test Bot #2).
+        # 11-12: then off nemotron-3.5-lightning:free (60 s parser timeouts killed tournament q 46354, 46465);
+        # now paid gpt-4o-mini (~$0.003/question from the $10 credit), timeout 120 s.
         # Free cap: 20 req/min, 50 req/day until $10 of credits is ever bought, then 1000/day.
         llms={
             "default": GeneralLlm(
@@ -726,14 +728,24 @@ if __name__ == "__main__":
                 timeout=300,
                 allowed_tries=3,
             ),
-            "summarizer": "openrouter/nvidia/nemotron-3.5-lightning:free",
+            "summarizer": GeneralLlm(
+                model="openrouter/openai/gpt-4o-mini",
+                temperature=0.3,
+                timeout=120,
+                allowed_tries=3,
+            ),
             "researcher": GeneralLlm(
                 model="openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
                 temperature=0.3,
                 timeout=300,
                 allowed_tries=3,
             ),
-            "parser": "openrouter/nvidia/nemotron-3.5-lightning:free",
+            "parser": GeneralLlm(
+                model="openrouter/openai/gpt-4o-mini",
+                temperature=0.3,
+                timeout=120,
+                allowed_tries=3,
+            ),
         },
     )
 
