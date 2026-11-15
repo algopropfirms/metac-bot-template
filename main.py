@@ -720,12 +720,14 @@ if __name__ == "__main__":
         # Parser/summarizer moved off gemma-4-31b:free (upstream 429 in Test Bot #2).
         # 11-12: then off nemotron-3.5-lightning:free (60 s parser timeouts killed tournament q 46354, 46465);
         # now paid gpt-4o-mini (~$0.003/question from the $10 credit), timeout 120 s.
+        # 11-15: default + researcher off nemotron-3-ultra:free (3x300 s research timeouts lost q 46472)
+        #        -> paid gemini-2.5-flash (~$0.03/question; $10 credit covers the season at current volume).
         # Free cap: 20 req/min, 50 req/day until $10 of credits is ever bought, then 1000/day.
         llms={
             "default": GeneralLlm(
-                model="openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+                model="openrouter/google/gemini-2.5-flash",
                 temperature=0.3,
-                timeout=300,
+                timeout=180,
                 allowed_tries=3,
             ),
             "summarizer": GeneralLlm(
@@ -735,9 +737,9 @@ if __name__ == "__main__":
                 allowed_tries=3,
             ),
             "researcher": GeneralLlm(
-                model="openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+                model="openrouter/google/gemini-2.5-flash",
                 temperature=0.3,
-                timeout=300,
+                timeout=180,
                 allowed_tries=3,
             ),
             "parser": GeneralLlm(
