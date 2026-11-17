@@ -424,6 +424,7 @@ class FallTemplateBot2026(ForecastBot):
             additional_instructions=parsing_instructions,
             num_validation_samples=self._structure_output_validation_samples,
         )
+        percentile_list = _make_strictly_increasing(percentile_list)
         prediction = NumericDistribution.from_question(percentile_list, question)
         logger.info(
             f"Forecasted URL {question.page_url} with prediction: {prediction.declared_percentiles}."
@@ -524,6 +525,7 @@ class FallTemplateBot2026(ForecastBot):
             )
             for percentile in date_percentile_list
         ]
+        percentile_list = _make_strictly_increasing(percentile_list)
         prediction = NumericDistribution.from_question(percentile_list, question)
         logger.info(
             f"Forecasted URL {question.page_url} with prediction: {prediction.declared_percentiles}."
@@ -682,6 +684,26 @@ class FallTemplateBot2026(ForecastBot):
             """
         )
 
+
+def _make_strictly_increasing(percentile_list: list[Percentile]) -> list[Percentile]:
+    """C1 11-17: the model sometimes repeats a value; NumericDistribution then rejects the whole
+    question ("Percentiles must be in strictly increasing order", q 46591 lost 11-16).
+    Sort by percentile, drop duplicate percentiles, nudge tied/decreasing values up by a tiny step."""
+    ordered = sorted(percentile_list, key=lambda p: p.percentile)
+    if not ordered:
+        return ordered
+    values = [p.value for p in ordered]
+    span = (max(values) - min(values)) or max(abs(values[0]), 1.0)
+    step = span * 1e-6
+    fixed: list[Percentile] = []
+    for p in ordered:
+        if fixed and p.percentile <= fixed[-1].percentile:
+            continue
+        value = p.value
+        if fixed and value <= fixed[-1].value:
+            value = fixed[-1].value + step
+        fixed.append(Percentile(percentile=p.percentile, value=value))
+    return fixed
 
 if __name__ == "__main__":
     logging.basicConfig(
